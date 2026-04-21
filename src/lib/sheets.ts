@@ -26,10 +26,33 @@ function sheetId(): string {
   return id;
 }
 
-let headersEnsured = false;
+let sheetReady = false;
+
+async function ensureSheetExists(sheets: sheets_v4.Sheets): Promise<void> {
+  const meta = await sheets.spreadsheets.get({
+    spreadsheetId: sheetId(),
+    fields: "sheets.properties(title,sheetId)",
+  });
+  const tabs = meta.data.sheets ?? [];
+  const has = tabs.some((s) => s.properties?.title === SHEET_NAME);
+  if (has) return;
+  await sheets.spreadsheets.batchUpdate({
+    spreadsheetId: sheetId(),
+    requestBody: {
+      requests: [
+        {
+          addSheet: {
+            properties: { title: SHEET_NAME },
+          },
+        },
+      ],
+    },
+  });
+}
 
 async function ensureHeaders(sheets: sheets_v4.Sheets): Promise<void> {
-  if (headersEnsured) return;
+  if (sheetReady) return;
+  await ensureSheetExists(sheets);
   const res = await sheets.spreadsheets.values.get({
     spreadsheetId: sheetId(),
     range: RANGE_HEADERS,
@@ -45,7 +68,7 @@ async function ensureHeaders(sheets: sheets_v4.Sheets): Promise<void> {
       requestBody: { values: [wanted as string[]] },
     });
   }
-  headersEnsured = true;
+  sheetReady = true;
 }
 
 export async function appendIssue(issue: Issue): Promise<void> {
