@@ -369,6 +369,28 @@ export default function Home() {
         )}
       </main>
 
+      <section className="w-full max-w-3xl mx-auto px-4 sm:px-6 pb-6">
+        <div className="rounded-lg border border-orange-200 bg-orange-50 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+          <div className="shrink-0 w-10 h-10 rounded-full bg-orange-500 text-white flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h2.28a2 2 0 011.94 1.515l.547 2.19a2 2 0 01-.45 1.9l-1.27 1.27a11.04 11.04 0 005.58 5.58l1.27-1.27a2 2 0 011.9-.45l2.19.547A2 2 0 0121 16.72V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+            </svg>
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-slate-900">Still have questions?</p>
+            <p className="text-xs text-slate-600 mt-0.5">
+              Call the TCL on-call support line.
+            </p>
+          </div>
+          <a
+            href="tel:+14849229596"
+            className="inline-flex items-center justify-center rounded-md bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 text-sm font-semibold shadow-sm whitespace-nowrap"
+          >
+            (484) 922-9596
+          </a>
+        </div>
+      </section>
+
       <footer className="py-4 px-4 text-center text-xs text-slate-500 border-t border-slate-200 bg-white/60">
         Tennis Cricket League · Rules queries powered by the official rules document
       </footer>
