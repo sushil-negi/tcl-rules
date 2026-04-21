@@ -35,15 +35,37 @@ export const ISSUE_HEADERS = [
   "updated_at",
 ] as const;
 
-export function isoWeek(d: Date): { year: number; week: number } {
-  const date = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
-  const dayNum = (date.getUTCDay() + 6) % 7;
-  date.setUTCDate(date.getUTCDate() - dayNum + 3);
-  const firstThursday = new Date(Date.UTC(date.getUTCFullYear(), 0, 4));
-  const diffDays = Math.round((date.getTime() - firstThursday.getTime()) / 86400000);
-  const week = 1 + Math.floor(diffDays / 7);
-  return { year: date.getUTCFullYear(), week };
+const DEFAULT_SEASON_START = "2026-04-14"; // Monday of Week 1
+
+function parseSeasonStart(): Date {
+  const raw = process.env.SEASON_START_DATE || DEFAULT_SEASON_START;
+  const parts = raw.split("-").map(Number);
+  if (parts.length !== 3 || parts.some((n) => Number.isNaN(n))) {
+    const fallback = DEFAULT_SEASON_START.split("-").map(Number);
+    return new Date(Date.UTC(fallback[0], fallback[1] - 1, fallback[2]));
+  }
+  return new Date(Date.UTC(parts[0], parts[1] - 1, parts[2]));
 }
+
+function mondayOf(date: Date): Date {
+  const d = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+  const dayNum = (d.getUTCDay() + 6) % 7; // 0 = Mon
+  d.setUTCDate(d.getUTCDate() - dayNum);
+  return d;
+}
+
+export function seasonWeek(d: Date): { year: number; week: number } {
+  const seasonStartMonday = mondayOf(parseSeasonStart());
+  const reportedMonday = mondayOf(d);
+  const diffDays = Math.round(
+    (reportedMonday.getTime() - seasonStartMonday.getTime()) / 86400000
+  );
+  const week = Math.max(1, Math.floor(diffDays / 7) + 1);
+  return { year: seasonStartMonday.getUTCFullYear(), week };
+}
+
+// Back-compat alias — older call sites kept working.
+export const isoWeek = seasonWeek;
 
 export function newIssueId(): string {
   const ts = new Date().toISOString().replace(/[:.]/g, "-");

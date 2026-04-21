@@ -3,7 +3,7 @@ import { isAdmin } from "@/lib/auth";
 import { appendIssue, listIssues } from "@/lib/sheets";
 import { getRulesDoc } from "@/lib/google-doc";
 import { analyzeIssueAgainstRules } from "@/lib/gemini";
-import { Issue, isoWeek, newIssueId } from "@/lib/issues";
+import { Issue, seasonWeek, newIssueId } from "@/lib/issues";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -42,7 +42,7 @@ export async function POST(request: Request) {
     }
 
     const now = new Date();
-    const { year, week } = isoWeek(now);
+    const { year, week } = seasonWeek(now);
 
     const doc = await getRulesDoc();
     const analysis = await analyzeIssueAgainstRules({
