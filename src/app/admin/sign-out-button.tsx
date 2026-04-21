@@ -11,7 +11,7 @@ export default function SignOutButton() {
     setLoading(true);
     try {
       await fetch("/api/admin/logout", { method: "POST" });
-      router.push("/admin/login");
+      router.push("/admin");
       router.refresh();
     } finally {
       setLoading(false);

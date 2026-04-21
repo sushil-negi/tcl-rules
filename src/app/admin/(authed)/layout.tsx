@@ -8,7 +8,7 @@ export default async function AuthedAdminLayout({
   children: React.ReactNode;
 }) {
   if (!(await isAdmin())) {
-    redirect("/admin/login");
+    redirect("/admin");
   }
   return (
     <div>
