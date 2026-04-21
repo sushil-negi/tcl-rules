@@ -1,0 +1,15 @@
+export const ONCALL_NAMES: readonly string[] = [
+  "Tushar Vedanti",
+  "Anil Purayat",
+  "Sushil Negi",
+  "Vinay Sethia",
+  "Niral Shah",
+  "Yogesh Dahale",
+  "Amar Vik",
+  "Sudhir Naik",
+  "Ravi Inaganti",
+  "Pavan Rachmalla",
+  "Lav Shah",
+  "Vinay Kolhar",
+  "Manish Dwivedi",
+] as const;

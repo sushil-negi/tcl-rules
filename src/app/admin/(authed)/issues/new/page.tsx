@@ -2,6 +2,7 @@
 
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { ONCALL_NAMES } from "@/lib/oncall";
 
 export default function NewIssuePage() {
   const router = useRouter();
@@ -60,12 +61,19 @@ export default function NewIssuePage() {
             <input
               id="reporter"
               type="text"
+              list="oncall-names"
               value={reporter}
               onChange={(e) => setReporter(e.target.value)}
-              placeholder="Your name"
+              placeholder="Start typing your name…"
+              autoComplete="off"
               className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
               disabled={loading}
             />
+            <datalist id="oncall-names">
+              {ONCALL_NAMES.map((name) => (
+                <option key={name} value={name} />
+              ))}
+            </datalist>
           </div>
           <div>
             <label htmlFor="caller" className="block text-sm font-medium text-slate-700 mb-1">
