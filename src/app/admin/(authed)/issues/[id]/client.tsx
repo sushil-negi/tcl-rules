@@ -35,22 +35,32 @@ export default function IssueDetailClient({ initialIssue }: { initialIssue: Issu
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
 
-  async function save() {
+  async function save(overrideStatus?: IssueStatus) {
     setSaving(true);
     setSaved(false);
     setError("");
+    const nextStatus = overrideStatus ?? status;
+    if (nextStatus === "resolved" && !resolution.trim()) {
+      setError("Add a short resolution before marking this issue resolved.");
+      setSaving(false);
+      return;
+    }
     try {
       const res = await fetch(`/api/admin/issues/${encodeURIComponent(issue.id)}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status, resolution }),
+        body: JSON.stringify({ status: nextStatus, resolution }),
       });
       const data = (await res.json()) as { issue?: Issue; error?: string };
       if (!res.ok || data.error) {
         setError(data.error || `Request failed (${res.status})`);
         return;
       }
-      if (data.issue) setIssue(data.issue);
+      if (data.issue) {
+        setIssue(data.issue);
+        setStatus(data.issue.status);
+        setResolution(data.issue.resolution);
+      }
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } catch (err) {
@@ -162,22 +172,35 @@ export default function IssueDetailClient({ initialIssue }: { initialIssue: Issu
                 className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-y"
                 disabled={saving}
               />
+              <p className="mt-1 text-xs text-slate-500">
+                Saved to the existing row in the issues sheet (column &quot;resolution&quot;).
+              </p>
             </div>
             {error && (
               <div role="alert" className="rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-800">
                 {error}
               </div>
             )}
-            <div className="flex items-center gap-3">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
               <button
                 type="button"
-                onClick={save}
+                onClick={() => save()}
                 disabled={saving}
-                className="inline-flex items-center justify-center rounded-md bg-orange-500 hover:bg-orange-600 text-white px-5 py-2 text-sm font-semibold disabled:opacity-50"
+                className="inline-flex items-center justify-center rounded-md bg-slate-900 hover:bg-slate-800 text-white px-5 py-2 text-sm font-semibold disabled:opacity-50"
               >
                 {saving ? "Saving…" : "Save changes"}
               </button>
-              {saved && <span className="text-sm text-green-700">Saved</span>}
+              {status !== "resolved" && (
+                <button
+                  type="button"
+                  onClick={() => save("resolved")}
+                  disabled={saving}
+                  className="inline-flex items-center justify-center rounded-md bg-orange-500 hover:bg-orange-600 text-white px-5 py-2 text-sm font-semibold disabled:opacity-50"
+                >
+                  Save as resolved
+                </button>
+              )}
+              {saved && <span className="text-sm text-green-700 self-center">Saved</span>}
             </div>
           </div>
         </section>
