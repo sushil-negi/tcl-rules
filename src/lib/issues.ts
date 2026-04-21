@@ -65,11 +65,13 @@ function tournamentStart(t: Tournament): Date {
   return parseDate(raw) ?? parseDate(DEFAULT_TOURNAMENT_STARTS[t])!;
 }
 
-// Saturday on or before the given date.
-function saturdayOnOrBefore(date: Date): Date {
+// Sunday at the end of the week containing `date`.
+// Mon–Sat roll forward to the upcoming Sunday; Sunday returns itself.
+function sundayOfWeek(date: Date): Date {
   const d = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
-  const back = (d.getUTCDay() + 1) % 7; // Sun→1, Mon→2, … Fri→6, Sat→0
-  d.setUTCDate(d.getUTCDate() - back);
+  const dow = d.getUTCDay(); // 0 = Sun
+  const add = dow === 0 ? 0 : 7 - dow;
+  d.setUTCDate(d.getUTCDate() + add);
   return d;
 }
 
@@ -77,11 +79,11 @@ export function seasonWeek(d: Date, tournament: Tournament = "regular"): {
   year: number;
   week: number;
 } {
-  const startSat = saturdayOnOrBefore(tournamentStart(tournament));
-  const reportedSat = saturdayOnOrBefore(d);
-  const diffDays = Math.round((reportedSat.getTime() - startSat.getTime()) / 86400000);
+  const startSun = sundayOfWeek(tournamentStart(tournament));
+  const reportedSun = sundayOfWeek(d);
+  const diffDays = Math.round((reportedSun.getTime() - startSun.getTime()) / 86400000);
   const week = Math.max(1, Math.floor(diffDays / 7) + 1);
-  return { year: startSat.getUTCFullYear(), week };
+  return { year: startSun.getUTCFullYear(), week };
 }
 
 // Back-compat alias — older call sites kept working.
