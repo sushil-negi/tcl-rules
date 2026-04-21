@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Issue, IssueStatus, AiStatus } from "@/lib/issues";
+import { Issue, IssueStatus, AiStatus, TOURNAMENT_LABEL } from "@/lib/issues";
 
 const STATUS_OPTIONS: { value: IssueStatus; label: string }[] = [
   { value: "open", label: "Open" },
@@ -64,7 +64,7 @@ export default function IssueDetailClient({ initialIssue }: { initialIssue: Issu
     <div className="mt-3">
       <h1 className="text-xl sm:text-2xl font-semibold text-slate-900 mb-1">Issue details</h1>
       <p className="text-xs text-slate-500 mb-5 break-all">
-        ID: {issue.id} · Week {issue.isoWeek}, {issue.year}
+        {TOURNAMENT_LABEL[issue.tournament]} · Week {issue.isoWeek} · ID: {issue.id}
       </p>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">

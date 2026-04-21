@@ -2,9 +2,10 @@ import { google, sheets_v4 } from "googleapis";
 import { Issue, ISSUE_HEADERS, issueToRow, rowToIssue } from "./issues";
 
 const SHEET_NAME = "Issues";
-const RANGE_ALL = `${SHEET_NAME}!A:N`;
-const RANGE_HEADERS = `${SHEET_NAME}!A1:N1`;
-const RANGE_ROWS = `${SHEET_NAME}!A2:N`;
+const LAST_COL = "O"; // matches ISSUE_HEADERS length (15 columns)
+const RANGE_ALL = `${SHEET_NAME}!A:${LAST_COL}`;
+const RANGE_HEADERS = `${SHEET_NAME}!A1:${LAST_COL}1`;
+const RANGE_ROWS = `${SHEET_NAME}!A2:${LAST_COL}`;
 
 function getAuth() {
   const { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN } = process.env;
@@ -129,7 +130,7 @@ export async function updateIssue(id: string, patch: Partial<Issue>): Promise<Is
   };
   await sheets.spreadsheets.values.update({
     spreadsheetId: sheetId(),
-    range: `${SHEET_NAME}!A${rowIndex}:N${rowIndex}`,
+    range: `${SHEET_NAME}!A${rowIndex}:${LAST_COL}${rowIndex}`,
     valueInputOption: "RAW",
     requestBody: { values: [issueToRow(merged)] },
   });

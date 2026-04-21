@@ -3,7 +3,7 @@ import { isAdmin } from "@/lib/auth";
 import { appendIssue, listIssues } from "@/lib/sheets";
 import { getRulesDoc } from "@/lib/google-doc";
 import { analyzeIssueAgainstRules } from "@/lib/gemini";
-import { Issue, seasonWeek, newIssueId } from "@/lib/issues";
+import { Issue, seasonWeek, newIssueId, TOURNAMENTS, Tournament } from "@/lib/issues";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -30,19 +30,25 @@ export async function POST(request: Request) {
       reporter?: unknown;
       caller?: unknown;
       description?: unknown;
+      tournament?: unknown;
     };
     const reporter = typeof body.reporter === "string" ? body.reporter.trim() : "";
     const caller = typeof body.caller === "string" ? body.caller.trim() : "";
     const description = typeof body.description === "string" ? body.description.trim() : "";
+    const tournamentRaw = typeof body.tournament === "string" ? body.tournament : "";
     if (!description) {
       return NextResponse.json({ error: "Description is required" }, { status: 400 });
     }
     if (description.length > 5000) {
       return NextResponse.json({ error: "Description is too long (max 5000 chars)" }, { status: 400 });
     }
+    if (!TOURNAMENTS.includes(tournamentRaw as Tournament)) {
+      return NextResponse.json({ error: "Tournament must be regular, seniors, or fireworks" }, { status: 400 });
+    }
+    const tournament = tournamentRaw as Tournament;
 
     const now = new Date();
-    const { year, week } = seasonWeek(now);
+    const { year, week } = seasonWeek(now, tournament);
 
     const doc = await getRulesDoc();
     const analysis = await analyzeIssueAgainstRules({
@@ -55,6 +61,7 @@ export async function POST(request: Request) {
       id: newIssueId(),
       year,
       isoWeek: week,
+      tournament,
       reportedAt: now.toISOString(),
       reporter,
       caller,

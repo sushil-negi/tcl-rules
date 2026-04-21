@@ -1,10 +1,20 @@
 export type IssueStatus = "open" | "resolved" | "needs_rule_update";
 export type AiStatus = "covered" | "gap" | "unclear";
+export type Tournament = "regular" | "seniors" | "fireworks";
+
+export const TOURNAMENTS: readonly Tournament[] = ["regular", "seniors", "fireworks"] as const;
+
+export const TOURNAMENT_LABEL: Record<Tournament, string> = {
+  regular: "Regular",
+  seniors: "Seniors",
+  fireworks: "Fireworks",
+};
 
 export interface Issue {
   id: string;
   year: number;
   isoWeek: number;
+  tournament: Tournament;
   reportedAt: string;
   reporter: string;
   caller: string;
@@ -22,6 +32,7 @@ export const ISSUE_HEADERS = [
   "id",
   "year",
   "iso_week",
+  "tournament",
   "reported_at",
   "reporter",
   "caller",
@@ -35,33 +46,42 @@ export const ISSUE_HEADERS = [
   "updated_at",
 ] as const;
 
-const DEFAULT_SEASON_START = "2026-04-14"; // Monday of Week 1
+// Each tournament's Week 1 is the Saturday of its first game weekend.
+const DEFAULT_TOURNAMENT_STARTS: Record<Tournament, string> = {
+  regular: "2026-04-18",
+  seniors: "2026-04-25",
+  fireworks: "2026-04-18", // placeholder — override with SEASON_START_FIREWORKS
+};
 
-function parseSeasonStart(): Date {
-  const raw = process.env.SEASON_START_DATE || DEFAULT_SEASON_START;
-  const parts = raw.split("-").map(Number);
-  if (parts.length !== 3 || parts.some((n) => Number.isNaN(n))) {
-    const fallback = DEFAULT_SEASON_START.split("-").map(Number);
-    return new Date(Date.UTC(fallback[0], fallback[1] - 1, fallback[2]));
-  }
+function parseDate(str: string): Date | null {
+  const parts = str.split("-").map(Number);
+  if (parts.length !== 3 || parts.some((n) => Number.isNaN(n))) return null;
   return new Date(Date.UTC(parts[0], parts[1] - 1, parts[2]));
 }
 
-function mondayOf(date: Date): Date {
+function tournamentStart(t: Tournament): Date {
+  const envKey = `SEASON_START_${t.toUpperCase()}` as const;
+  const raw = process.env[envKey] || DEFAULT_TOURNAMENT_STARTS[t];
+  return parseDate(raw) ?? parseDate(DEFAULT_TOURNAMENT_STARTS[t])!;
+}
+
+// Saturday on or before the given date.
+function saturdayOnOrBefore(date: Date): Date {
   const d = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
-  const dayNum = (d.getUTCDay() + 6) % 7; // 0 = Mon
-  d.setUTCDate(d.getUTCDate() - dayNum);
+  const back = (d.getUTCDay() + 1) % 7; // Sun→1, Mon→2, … Fri→6, Sat→0
+  d.setUTCDate(d.getUTCDate() - back);
   return d;
 }
 
-export function seasonWeek(d: Date): { year: number; week: number } {
-  const seasonStartMonday = mondayOf(parseSeasonStart());
-  const reportedMonday = mondayOf(d);
-  const diffDays = Math.round(
-    (reportedMonday.getTime() - seasonStartMonday.getTime()) / 86400000
-  );
+export function seasonWeek(d: Date, tournament: Tournament = "regular"): {
+  year: number;
+  week: number;
+} {
+  const startSat = saturdayOnOrBefore(tournamentStart(tournament));
+  const reportedSat = saturdayOnOrBefore(d);
+  const diffDays = Math.round((reportedSat.getTime() - startSat.getTime()) / 86400000);
   const week = Math.max(1, Math.floor(diffDays / 7) + 1);
-  return { year: seasonStartMonday.getUTCFullYear(), week };
+  return { year: startSat.getUTCFullYear(), week };
 }
 
 // Back-compat alias — older call sites kept working.
@@ -73,11 +93,16 @@ export function newIssueId(): string {
   return `${ts}-${rand}`;
 }
 
+function normalizeTournament(v: string): Tournament {
+  return (TOURNAMENTS as readonly string[]).includes(v) ? (v as Tournament) : "regular";
+}
+
 export function issueToRow(issue: Issue): string[] {
   return [
     issue.id,
     String(issue.year),
     String(issue.isoWeek),
+    issue.tournament,
     issue.reportedAt,
     issue.reporter,
     issue.caller,
@@ -93,11 +118,14 @@ export function issueToRow(issue: Issue): string[] {
 }
 
 export function rowToIssue(row: string[]): Issue | null {
-  if (row.length < ISSUE_HEADERS.length) return null;
+  if (!row[0]) return null;
+  const pad = [...row];
+  while (pad.length < ISSUE_HEADERS.length) pad.push("");
   const [
     id,
     year,
     iso_week,
+    tournament,
     reported_at,
     reporter,
     caller,
@@ -109,12 +137,12 @@ export function rowToIssue(row: string[]): Issue | null {
     resolution,
     created_at,
     updated_at,
-  ] = row;
-  if (!id) return null;
+  ] = pad;
   return {
     id,
     year: Number(year) || 0,
     isoWeek: Number(iso_week) || 0,
+    tournament: normalizeTournament(tournament),
     reportedAt: reported_at || "",
     reporter: reporter || "",
     caller: caller || "",
@@ -130,24 +158,43 @@ export function rowToIssue(row: string[]): Issue | null {
 }
 
 export function groupByWeek(issues: Issue[]): Array<{
+  tournament: Tournament;
   year: number;
   week: number;
   label: string;
   issues: Issue[];
 }> {
-  const map = new Map<string, { year: number; week: number; issues: Issue[] }>();
+  const map = new Map<
+    string,
+    { tournament: Tournament; year: number; week: number; issues: Issue[] }
+  >();
   for (const issue of issues) {
-    const key = `${issue.year}-${String(issue.isoWeek).padStart(2, "0")}`;
-    const entry = map.get(key) ?? { year: issue.year, week: issue.isoWeek, issues: [] };
+    const key = `${issue.tournament}-${issue.year}-${String(issue.isoWeek).padStart(2, "0")}`;
+    const entry = map.get(key) ?? {
+      tournament: issue.tournament,
+      year: issue.year,
+      week: issue.isoWeek,
+      issues: [],
+    };
     entry.issues.push(issue);
     map.set(key, entry);
   }
   return Array.from(map.entries())
-    .sort((a, b) => (a[0] < b[0] ? 1 : -1))
+    .sort((a, b) => {
+      // Sort by tournament (regular > seniors > fireworks stable), then newest week first
+      const ta = a[1].tournament;
+      const tb = b[1].tournament;
+      const tOrder = TOURNAMENTS.indexOf(ta) - TOURNAMENTS.indexOf(tb);
+      if (tOrder !== 0) return tOrder;
+      return a[1].week === b[1].week
+        ? b[1].year - a[1].year
+        : b[1].week - a[1].week;
+    })
     .map(([, v]) => ({
+      tournament: v.tournament,
       year: v.year,
       week: v.week,
-      label: `Week ${v.week}, ${v.year}`,
+      label: `${TOURNAMENT_LABEL[v.tournament]} · Week ${v.week}`,
       issues: v.issues.sort((a, b) => (a.reportedAt < b.reportedAt ? 1 : -1)),
     }));
 }

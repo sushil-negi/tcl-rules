@@ -3,12 +3,14 @@
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { ONCALL_NAMES } from "@/lib/oncall";
+import { TOURNAMENTS, TOURNAMENT_LABEL, Tournament } from "@/lib/issues";
 
 export default function NewIssuePage() {
   const router = useRouter();
   const [reporter, setReporter] = useState("");
   const [caller, setCaller] = useState("");
   const [description, setDescription] = useState("");
+  const [tournament, setTournament] = useState<Tournament>("regular");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -20,7 +22,7 @@ export default function NewIssuePage() {
       const res = await fetch("/api/admin/issues", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ reporter, caller, description }),
+        body: JSON.stringify({ reporter, caller, description, tournament }),
       });
       const data = (await res.json()) as { issue?: { id: string }; error?: string };
       if (!res.ok || data.error) {
@@ -53,6 +55,35 @@ export default function NewIssuePage() {
         onSubmit={handleSubmit}
         className="bg-white border border-slate-200 rounded-lg p-5 shadow-sm space-y-4"
       >
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-2">
+            Tournament <span className="text-red-600">*</span>
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {TOURNAMENTS.map((t) => (
+              <label
+                key={t}
+                className={`inline-flex items-center gap-2 rounded-md border px-3 py-2 text-sm cursor-pointer transition-colors ${
+                  tournament === t
+                    ? "border-orange-500 bg-orange-50 text-orange-800"
+                    : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="tournament"
+                  value={t}
+                  checked={tournament === t}
+                  onChange={() => setTournament(t)}
+                  className="accent-orange-500"
+                  disabled={loading}
+                />
+                {TOURNAMENT_LABEL[t]}
+              </label>
+            ))}
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label htmlFor="reporter" className="block text-sm font-medium text-slate-700 mb-1">
