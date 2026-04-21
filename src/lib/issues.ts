@@ -1,8 +1,10 @@
 export type IssueStatus = "open" | "resolved" | "needs_rule_update";
 export type AiStatus = "covered" | "gap" | "unclear";
 export type Tournament = "regular" | "seniors" | "fireworks";
+export type Ground = "phx" | "boot" | "wil" | "lad" | "other";
 
 export const TOURNAMENTS: readonly Tournament[] = ["regular", "seniors", "fireworks"] as const;
+export const GROUNDS: readonly Ground[] = ["phx", "boot", "wil", "lad", "other"] as const;
 
 export const TOURNAMENT_LABEL: Record<Tournament, string> = {
   regular: "Regular",
@@ -10,11 +12,20 @@ export const TOURNAMENT_LABEL: Record<Tournament, string> = {
   fireworks: "Fireworks",
 };
 
+export const GROUND_LABEL: Record<Ground, string> = {
+  phx: "PHX",
+  boot: "BOOT",
+  wil: "WIL",
+  lad: "LAD",
+  other: "Other",
+};
+
 export interface Issue {
   id: string;
   year: number;
   isoWeek: number;
   tournament: Tournament;
+  ground: Ground;
   reportedAt: string;
   reporter: string;
   caller: string;
@@ -33,6 +44,7 @@ export const ISSUE_HEADERS = [
   "year",
   "iso_week",
   "tournament",
+  "ground",
   "reported_at",
   "reporter",
   "caller",
@@ -99,12 +111,17 @@ function normalizeTournament(v: string): Tournament {
   return (TOURNAMENTS as readonly string[]).includes(v) ? (v as Tournament) : "regular";
 }
 
+function normalizeGround(v: string): Ground {
+  return (GROUNDS as readonly string[]).includes(v) ? (v as Ground) : "other";
+}
+
 export function issueToRow(issue: Issue): string[] {
   return [
     issue.id,
     String(issue.year),
     String(issue.isoWeek),
     issue.tournament,
+    issue.ground,
     issue.reportedAt,
     issue.reporter,
     issue.caller,
@@ -128,6 +145,7 @@ export function rowToIssue(row: string[]): Issue | null {
     year,
     iso_week,
     tournament,
+    ground,
     reported_at,
     reporter,
     caller,
@@ -145,6 +163,7 @@ export function rowToIssue(row: string[]): Issue | null {
     year: Number(year) || 0,
     isoWeek: Number(iso_week) || 0,
     tournament: normalizeTournament(tournament),
+    ground: normalizeGround(ground),
     reportedAt: reported_at || "",
     reporter: reporter || "",
     caller: caller || "",

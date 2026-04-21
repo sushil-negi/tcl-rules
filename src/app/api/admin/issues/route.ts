@@ -3,7 +3,15 @@ import { isAdmin } from "@/lib/auth";
 import { appendIssue, listIssues } from "@/lib/sheets";
 import { getRulesDoc } from "@/lib/google-doc";
 import { analyzeIssueAgainstRules } from "@/lib/gemini";
-import { Issue, seasonWeek, newIssueId, TOURNAMENTS, Tournament } from "@/lib/issues";
+import {
+  Issue,
+  seasonWeek,
+  newIssueId,
+  TOURNAMENTS,
+  Tournament,
+  GROUNDS,
+  Ground,
+} from "@/lib/issues";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -31,11 +39,13 @@ export async function POST(request: Request) {
       caller?: unknown;
       description?: unknown;
       tournament?: unknown;
+      ground?: unknown;
     };
     const reporter = typeof body.reporter === "string" ? body.reporter.trim() : "";
     const caller = typeof body.caller === "string" ? body.caller.trim() : "";
     const description = typeof body.description === "string" ? body.description.trim() : "";
     const tournamentRaw = typeof body.tournament === "string" ? body.tournament : "";
+    const groundRaw = typeof body.ground === "string" ? body.ground : "";
     if (!description) {
       return NextResponse.json({ error: "Description is required" }, { status: 400 });
     }
@@ -45,7 +55,11 @@ export async function POST(request: Request) {
     if (!TOURNAMENTS.includes(tournamentRaw as Tournament)) {
       return NextResponse.json({ error: "Tournament must be regular, seniors, or fireworks" }, { status: 400 });
     }
+    if (!GROUNDS.includes(groundRaw as Ground)) {
+      return NextResponse.json({ error: "Ground must be PHX, BOOT, WIL, LAD, or Other" }, { status: 400 });
+    }
     const tournament = tournamentRaw as Tournament;
+    const ground = groundRaw as Ground;
 
     const now = new Date();
     const { year, week } = seasonWeek(now, tournament);
@@ -62,6 +76,7 @@ export async function POST(request: Request) {
       year,
       isoWeek: week,
       tournament,
+      ground,
       reportedAt: now.toISOString(),
       reporter,
       caller,

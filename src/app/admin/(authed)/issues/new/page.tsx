@@ -3,7 +3,14 @@
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { ONCALL_NAMES } from "@/lib/oncall";
-import { TOURNAMENTS, TOURNAMENT_LABEL, Tournament } from "@/lib/issues";
+import {
+  TOURNAMENTS,
+  TOURNAMENT_LABEL,
+  Tournament,
+  GROUNDS,
+  GROUND_LABEL,
+  Ground,
+} from "@/lib/issues";
 
 export default function NewIssuePage() {
   const router = useRouter();
@@ -11,6 +18,7 @@ export default function NewIssuePage() {
   const [caller, setCaller] = useState("");
   const [description, setDescription] = useState("");
   const [tournament, setTournament] = useState<Tournament>("regular");
+  const [ground, setGround] = useState<Ground>("phx");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -22,7 +30,7 @@ export default function NewIssuePage() {
       const res = await fetch("/api/admin/issues", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ reporter, caller, description, tournament }),
+        body: JSON.stringify({ reporter, caller, description, tournament, ground }),
       });
       const data = (await res.json()) as { issue?: { id: string }; error?: string };
       if (!res.ok || data.error) {
@@ -79,6 +87,35 @@ export default function NewIssuePage() {
                   disabled={loading}
                 />
                 {TOURNAMENT_LABEL[t]}
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-2">
+            Ground <span className="text-red-600">*</span>
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {GROUNDS.map((g) => (
+              <label
+                key={g}
+                className={`inline-flex items-center gap-2 rounded-md border px-3 py-2 text-sm cursor-pointer transition-colors ${
+                  ground === g
+                    ? "border-orange-500 bg-orange-50 text-orange-800"
+                    : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="ground"
+                  value={g}
+                  checked={ground === g}
+                  onChange={() => setGround(g)}
+                  className="accent-orange-500"
+                  disabled={loading}
+                />
+                {GROUND_LABEL[g]}
               </label>
             ))}
           </div>

@@ -2,7 +2,7 @@ import { google, sheets_v4 } from "googleapis";
 import { Issue, ISSUE_HEADERS, issueToRow, rowToIssue } from "./issues";
 
 const SHEET_NAME = "Issues";
-const LAST_COL = "O"; // matches ISSUE_HEADERS length (15 columns)
+const LAST_COL = "P"; // matches ISSUE_HEADERS length (16 columns)
 const RANGE_ALL = `${SHEET_NAME}!A:${LAST_COL}`;
 const RANGE_HEADERS = `${SHEET_NAME}!A1:${LAST_COL}1`;
 const RANGE_ROWS = `${SHEET_NAME}!A2:${LAST_COL}`;
