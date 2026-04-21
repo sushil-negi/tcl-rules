@@ -3,8 +3,11 @@
 import { useState, useEffect, useCallback, FormEvent } from "react";
 import Image from "next/image";
 
+type AnswerSource = "tcl" | "icc" | "none";
+
 interface QueryResponse {
   answer: string;
+  source: AnswerSource;
   docTitle: string;
   docFetchedAt: string;
 }
@@ -13,9 +16,16 @@ interface HistoryEntry {
   id: string;
   question: string;
   answer: string;
+  source: AnswerSource;
   docTitle: string;
   askedAt: string;
 }
+
+const SOURCE_BADGE: Record<AnswerSource, { label: string; className: string }> = {
+  tcl: { label: "From TCL rules", className: "bg-green-100 text-green-800" },
+  icc: { label: "From ICC ODI rules (TCL silent)", className: "bg-blue-100 text-blue-800" },
+  none: { label: "Not in TCL or ICC", className: "bg-slate-100 text-slate-700" },
+};
 
 const STORAGE_KEY = "tcl-rules-history-v1";
 const MAX_HISTORY = 50;
@@ -44,6 +54,7 @@ function saveHistory(entries: HistoryEntry[]): void {
 export default function Home() {
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState<string | null>(null);
+  const [source, setSource] = useState<AnswerSource | null>(null);
   const [meta, setMeta] = useState<{ docTitle: string; docFetchedAt: string } | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -71,6 +82,7 @@ export default function Home() {
     setLoading(true);
     setError("");
     setAnswer(null);
+    setSource(null);
     try {
       const res = await fetch("/api/query", {
         method: "POST",
@@ -83,11 +95,13 @@ export default function Home() {
         return;
       }
       setAnswer(data.answer);
+      setSource(data.source);
       setMeta({ docTitle: data.docTitle, docFetchedAt: data.docFetchedAt });
       pushHistory({
         id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
         question: trimmed,
         answer: data.answer,
+        source: data.source,
         docTitle: data.docTitle,
         askedAt: new Date().toISOString(),
       });
@@ -234,16 +248,25 @@ export default function Home() {
 
         {answer && (
           <section className="mt-6 sm:mt-8">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">
-              Answer
-            </h3>
+            <div className="flex items-center justify-between mb-2 gap-2">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                Answer
+              </h3>
+              {source && (
+                <span
+                  className={`text-[10px] sm:text-xs font-semibold uppercase px-2 py-0.5 rounded ${SOURCE_BADGE[source].className}`}
+                >
+                  {SOURCE_BADGE[source].label}
+                </span>
+              )}
+            </div>
             <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-4 sm:p-5">
               <div className="whitespace-pre-wrap text-slate-900 text-sm sm:text-base leading-relaxed">
                 {answer}
               </div>
               {meta && (
                 <p className="mt-3 pt-3 border-t border-slate-100 text-xs text-slate-500">
-                  Source: <span className="font-medium">{meta.docTitle}</span> · fetched{" "}
+                  TCL doc: <span className="font-medium">{meta.docTitle}</span> · fetched{" "}
                   {new Date(meta.docFetchedAt).toLocaleString()}
                 </p>
               )}
@@ -318,6 +341,13 @@ export default function Home() {
                       </button>
                       {isOpen && (
                         <div className="px-3 sm:px-4 pb-4 bg-slate-50 border-t border-slate-200">
+                          {entry.source && (
+                            <span
+                              className={`inline-block mt-3 text-[10px] font-semibold uppercase px-2 py-0.5 rounded ${SOURCE_BADGE[entry.source].className}`}
+                            >
+                              {SOURCE_BADGE[entry.source].label}
+                            </span>
+                          )}
                           <div className="whitespace-pre-wrap text-sm text-slate-800 leading-relaxed pt-3">
                             {entry.answer}
                           </div>

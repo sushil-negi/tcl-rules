@@ -19,14 +19,15 @@ export async function POST(request: Request) {
     if (body.refresh === true) invalidateRulesCache();
 
     const doc = await getRulesDoc();
-    const answer = await answerQuestion({
+    const result = await answerQuestion({
       question,
       docTitle: doc.title,
       docText: doc.text,
     });
 
     return NextResponse.json({
-      answer,
+      answer: result.answer,
+      source: result.source,
       docTitle: doc.title,
       docFetchedAt: new Date(doc.fetchedAt).toISOString(),
     });
