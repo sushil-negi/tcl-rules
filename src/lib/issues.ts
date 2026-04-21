@@ -1,5 +1,5 @@
 export type IssueStatus = "open" | "resolved" | "needs_rule_update";
-export type AiStatus = "covered" | "gap" | "unclear";
+export type AiStatus = "analyzing" | "covered" | "gap" | "unclear";
 export type Tournament = "regular" | "seniors" | "fireworks";
 export type Ground = "phx" | "boot" | "wil" | "lad" | "other";
 
@@ -168,7 +168,12 @@ export function rowToIssue(row: string[]): Issue | null {
     reporter: reporter || "",
     caller: caller || "",
     description: description || "",
-    aiStatus: (ai_status as AiStatus) || "unclear",
+    aiStatus: ((): AiStatus => {
+      const v = ai_status as AiStatus;
+      return v === "analyzing" || v === "covered" || v === "gap" || v === "unclear"
+        ? v
+        : "unclear";
+    })(),
     aiRelatedSection: ai_related_section || "",
     aiSuggestedWording: ai_suggested_wording || "",
     status: (status as IssueStatus) || "open",

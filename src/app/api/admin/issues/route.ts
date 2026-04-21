@@ -1,6 +1,6 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { isAdmin } from "@/lib/auth";
-import { appendIssue, listIssues } from "@/lib/sheets";
+import { appendIssue, listIssues, updateIssue } from "@/lib/sheets";
 import { getRulesDoc } from "@/lib/google-doc";
 import { analyzeIssueAgainstRules } from "@/lib/gemini";
 import {
@@ -64,13 +64,6 @@ export async function POST(request: Request) {
     const now = new Date();
     const { year, week } = seasonWeek(now, tournament);
 
-    const doc = await getRulesDoc();
-    const analysis = await analyzeIssueAgainstRules({
-      docTitle: doc.title,
-      docText: doc.text,
-      issueDescription: description,
-    });
-
     const issue: Issue = {
       id: newIssueId(),
       year,
@@ -81,16 +74,43 @@ export async function POST(request: Request) {
       reporter,
       caller,
       description,
-      aiStatus: analysis.status,
-      aiRelatedSection: analysis.related_section,
-      aiSuggestedWording: analysis.suggested_wording,
-      status: analysis.status === "gap" ? "needs_rule_update" : "open",
+      aiStatus: "analyzing",
+      aiRelatedSection: "",
+      aiSuggestedWording: "",
+      status: "open",
       resolution: "",
       createdAt: now.toISOString(),
       updatedAt: now.toISOString(),
     };
 
     await appendIssue(issue);
+
+    // Run Gemini analysis AFTER the response is sent so the user isn't
+    // blocked waiting 5-10 s for it. The detail page polls until the
+    // aiStatus transitions out of "analyzing".
+    after(async () => {
+      try {
+        const doc = await getRulesDoc();
+        const analysis = await analyzeIssueAgainstRules({
+          docTitle: doc.title,
+          docText: doc.text,
+          issueDescription: description,
+        });
+        await updateIssue(issue.id, {
+          aiStatus: analysis.status,
+          aiRelatedSection: analysis.related_section,
+          aiSuggestedWording: analysis.suggested_wording,
+          status: analysis.status === "gap" ? "needs_rule_update" : "open",
+        });
+      } catch (err) {
+        console.error("Background analysis failed:", err);
+        await updateIssue(issue.id, {
+          aiStatus: "unclear",
+          aiRelatedSection: "Automatic analysis failed — please review manually.",
+        }).catch(() => {});
+      }
+    });
+
     return NextResponse.json({ issue });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";

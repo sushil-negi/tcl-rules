@@ -29,6 +29,15 @@ function sheetId(): string {
 
 let sheetReady = false;
 
+// Short-lived list cache. A second navigation to /admin/issues within the TTL
+// skips the Sheets round-trip entirely.
+const LIST_TTL_MS = 15 * 1000;
+let listCache: { data: Issue[]; fetchedAt: number } | null = null;
+
+function invalidateListCache(): void {
+  listCache = null;
+}
+
 async function ensureSheetExists(sheets: sheets_v4.Sheets): Promise<void> {
   const meta = await sheets.spreadsheets.get({
     spreadsheetId: sheetId(),
@@ -82,9 +91,13 @@ export async function appendIssue(issue: Issue): Promise<void> {
     insertDataOption: "INSERT_ROWS",
     requestBody: { values: [issueToRow(issue)] },
   });
+  invalidateListCache();
 }
 
 export async function listIssues(): Promise<Issue[]> {
+  if (listCache && Date.now() - listCache.fetchedAt < LIST_TTL_MS) {
+    return listCache.data;
+  }
   const sheets = getClient();
   await ensureHeaders(sheets);
   const res = await sheets.spreadsheets.values.get({
@@ -97,6 +110,7 @@ export async function listIssues(): Promise<Issue[]> {
     const issue = rowToIssue(row as string[]);
     if (issue) issues.push(issue);
   }
+  listCache = { data: issues, fetchedAt: Date.now() };
   return issues;
 }
 
@@ -161,6 +175,7 @@ export async function updateIssue(id: string, patch: Partial<Issue>): Promise<Is
     spreadsheetId: sheetId(),
     requestBody: { valueInputOption: "RAW", data: writes },
   });
+  invalidateListCache();
 
   // Return a merged view without re-reading the sheet. Callers that need
   // the full issue body can still fetch getIssue explicitly.

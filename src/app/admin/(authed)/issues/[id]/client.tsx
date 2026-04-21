@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Issue, IssueStatus, AiStatus, TOURNAMENT_LABEL, GROUND_LABEL } from "@/lib/issues";
 
 const STATUS_OPTIONS: { value: IssueStatus; label: string }[] = [
@@ -10,6 +10,11 @@ const STATUS_OPTIONS: { value: IssueStatus; label: string }[] = [
 ];
 
 const AI_BADGE: Record<AiStatus, { text: string; className: string; description: string }> = {
+  analyzing: {
+    text: "Analyzing…",
+    className: "bg-blue-100 text-blue-800 animate-pulse",
+    description: "Gemini is analyzing this issue against the rules. This page will update automatically.",
+  },
   covered: {
     text: "Covered by rules",
     className: "bg-green-100 text-green-800",
@@ -34,6 +39,27 @@ export default function IssueDetailClient({ initialIssue }: { initialIssue: Issu
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
+
+  // Poll while Gemini's background analysis is running.
+  useEffect(() => {
+    if (issue.aiStatus !== "analyzing") return;
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch(`/api/admin/issues/${encodeURIComponent(issue.id)}`, {
+          cache: "no-store",
+        });
+        if (!res.ok) return;
+        const data = (await res.json()) as { issue?: Issue };
+        if (data.issue && data.issue.aiStatus !== "analyzing") {
+          setIssue(data.issue);
+          setStatus(data.issue.status);
+        }
+      } catch {
+        // ignore and retry on next tick
+      }
+    }, 2500);
+    return () => clearInterval(interval);
+  }, [issue.aiStatus, issue.id]);
 
   async function save(overrideStatus?: IssueStatus) {
     setSaving(true);
