@@ -1,0 +1,114 @@
+import { google, sheets_v4 } from "googleapis";
+import { Issue, ISSUE_HEADERS, issueToRow, rowToIssue } from "./issues";
+
+const SHEET_NAME = "Issues";
+const RANGE_ALL = `${SHEET_NAME}!A:N`;
+const RANGE_HEADERS = `${SHEET_NAME}!A1:N1`;
+const RANGE_ROWS = `${SHEET_NAME}!A2:N`;
+
+function getAuth() {
+  const { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN } = process.env;
+  if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET || !GOOGLE_REFRESH_TOKEN) {
+    throw new Error("Missing Google OAuth env vars");
+  }
+  const client = new google.auth.OAuth2(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET);
+  client.setCredentials({ refresh_token: GOOGLE_REFRESH_TOKEN });
+  return client;
+}
+
+function getClient(): sheets_v4.Sheets {
+  return google.sheets({ version: "v4", auth: getAuth() });
+}
+
+function sheetId(): string {
+  const id = process.env.GOOGLE_ISSUES_SHEET_ID;
+  if (!id) throw new Error("GOOGLE_ISSUES_SHEET_ID is not set");
+  return id;
+}
+
+let headersEnsured = false;
+
+async function ensureHeaders(sheets: sheets_v4.Sheets): Promise<void> {
+  if (headersEnsured) return;
+  const res = await sheets.spreadsheets.values.get({
+    spreadsheetId: sheetId(),
+    range: RANGE_HEADERS,
+  });
+  const existing = res.data.values?.[0] ?? [];
+  const wanted = ISSUE_HEADERS as readonly string[];
+  const match = existing.length === wanted.length && existing.every((v, i) => v === wanted[i]);
+  if (!match) {
+    await sheets.spreadsheets.values.update({
+      spreadsheetId: sheetId(),
+      range: RANGE_HEADERS,
+      valueInputOption: "RAW",
+      requestBody: { values: [wanted as string[]] },
+    });
+  }
+  headersEnsured = true;
+}
+
+export async function appendIssue(issue: Issue): Promise<void> {
+  const sheets = getClient();
+  await ensureHeaders(sheets);
+  await sheets.spreadsheets.values.append({
+    spreadsheetId: sheetId(),
+    range: RANGE_ALL,
+    valueInputOption: "RAW",
+    insertDataOption: "INSERT_ROWS",
+    requestBody: { values: [issueToRow(issue)] },
+  });
+}
+
+export async function listIssues(): Promise<Issue[]> {
+  const sheets = getClient();
+  await ensureHeaders(sheets);
+  const res = await sheets.spreadsheets.values.get({
+    spreadsheetId: sheetId(),
+    range: RANGE_ROWS,
+  });
+  const rows = res.data.values ?? [];
+  const issues: Issue[] = [];
+  for (const row of rows) {
+    const issue = rowToIssue(row as string[]);
+    if (issue) issues.push(issue);
+  }
+  return issues;
+}
+
+async function findRowIndex(sheets: sheets_v4.Sheets, id: string): Promise<number | null> {
+  const res = await sheets.spreadsheets.values.get({
+    spreadsheetId: sheetId(),
+    range: `${SHEET_NAME}!A2:A`,
+  });
+  const ids = (res.data.values ?? []).map((r) => r[0] as string);
+  const idx = ids.indexOf(id);
+  return idx === -1 ? null : idx + 2; // +2 because range starts at row 2
+}
+
+export async function getIssue(id: string): Promise<Issue | null> {
+  const issues = await listIssues();
+  return issues.find((i) => i.id === id) ?? null;
+}
+
+export async function updateIssue(id: string, patch: Partial<Issue>): Promise<Issue | null> {
+  const sheets = getClient();
+  await ensureHeaders(sheets);
+  const rowIndex = await findRowIndex(sheets, id);
+  if (!rowIndex) return null;
+  const existing = await getIssue(id);
+  if (!existing) return null;
+  const merged: Issue = {
+    ...existing,
+    ...patch,
+    id: existing.id,
+    updatedAt: new Date().toISOString(),
+  };
+  await sheets.spreadsheets.values.update({
+    spreadsheetId: sheetId(),
+    range: `${SHEET_NAME}!A${rowIndex}:N${rowIndex}`,
+    valueInputOption: "RAW",
+    requestBody: { values: [issueToRow(merged)] },
+  });
+  return merged;
+}
