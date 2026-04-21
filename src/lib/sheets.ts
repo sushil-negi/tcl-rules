@@ -115,24 +115,54 @@ export async function getIssue(id: string): Promise<Issue | null> {
   return issues.find((i) => i.id === id) ?? null;
 }
 
+// Column letters mirror ISSUE_HEADERS order (A = id, … , P = updated_at).
+const COL: Record<keyof Issue, string> = {
+  id: "A",
+  year: "B",
+  isoWeek: "C",
+  tournament: "D",
+  ground: "E",
+  reportedAt: "F",
+  reporter: "G",
+  caller: "H",
+  description: "I",
+  aiStatus: "J",
+  aiRelatedSection: "K",
+  aiSuggestedWording: "L",
+  status: "M",
+  resolution: "N",
+  createdAt: "O",
+  updatedAt: "P",
+};
+
 export async function updateIssue(id: string, patch: Partial<Issue>): Promise<Issue | null> {
   const sheets = getClient();
   await ensureHeaders(sheets);
   const rowIndex = await findRowIndex(sheets, id);
   if (!rowIndex) return null;
-  const existing = await getIssue(id);
-  if (!existing) return null;
-  const merged: Issue = {
-    ...existing,
-    ...patch,
-    id: existing.id,
-    updatedAt: new Date().toISOString(),
-  };
-  await sheets.spreadsheets.values.update({
-    spreadsheetId: sheetId(),
-    range: `${SHEET_NAME}!A${rowIndex}:${LAST_COL}${rowIndex}`,
-    valueInputOption: "RAW",
-    requestBody: { values: [issueToRow(merged)] },
+
+  const updatedAt = new Date().toISOString();
+  const writes: { range: string; values: string[][] }[] = [];
+  for (const key of Object.keys(patch) as (keyof Issue)[]) {
+    if (key === "id") continue;
+    const raw = patch[key];
+    if (raw === undefined) continue;
+    writes.push({
+      range: `${SHEET_NAME}!${COL[key]}${rowIndex}`,
+      values: [[String(raw)]],
+    });
+  }
+  writes.push({
+    range: `${SHEET_NAME}!${COL.updatedAt}${rowIndex}`,
+    values: [[updatedAt]],
   });
-  return merged;
+
+  await sheets.spreadsheets.values.batchUpdate({
+    spreadsheetId: sheetId(),
+    requestBody: { valueInputOption: "RAW", data: writes },
+  });
+
+  // Return a merged view without re-reading the sheet. Callers that need
+  // the full issue body can still fetch getIssue explicitly.
+  return { id, updatedAt, ...(patch as Partial<Issue>) } as Issue;
 }

@@ -57,9 +57,11 @@ export default function IssueDetailClient({ initialIssue }: { initialIssue: Issu
         return;
       }
       if (data.issue) {
-        setIssue(data.issue);
-        setStatus(data.issue.status);
-        setResolution(data.issue.resolution);
+        // Server returns only the fields it changed; merge on top of
+        // existing state to keep untouched fields intact.
+        setIssue((prev) => ({ ...prev, ...data.issue }));
+        if (data.issue.status) setStatus(data.issue.status);
+        if (typeof data.issue.resolution === "string") setResolution(data.issue.resolution);
       }
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
