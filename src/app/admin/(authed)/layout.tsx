@@ -12,12 +12,18 @@ export default async function AuthedAdminLayout({
   }
   return (
     <div>
-      <nav className="flex items-center gap-4 mb-5 text-sm">
+      <nav className="flex items-center flex-wrap gap-4 mb-5 text-sm">
         <Link
           href="/admin/issues"
           className="text-slate-600 hover:text-slate-900 font-medium"
         >
           All issues
+        </Link>
+        <Link
+          href="/admin/metrics"
+          className="text-slate-600 hover:text-slate-900 font-medium"
+        >
+          Metrics
         </Link>
         <Link
           href="/admin/issues/new"
