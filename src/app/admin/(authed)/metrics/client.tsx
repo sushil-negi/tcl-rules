@@ -71,8 +71,17 @@ function Card({
 }
 
 export default function MetricsClient({ metrics }: { metrics: Metrics }) {
-  const { kpis, newPerWeek, gapsPerWeek, byGround, byTournament, topCallers, topSections, aging } =
-    metrics;
+  const {
+    kpis,
+    newPerWeek,
+    gapsPerWeek,
+    byGround,
+    byTournament,
+    topTeams,
+    topCallers,
+    topSections,
+    aging,
+  } = metrics;
 
   const trendText =
     kpis.weekOverWeekPct === null
@@ -182,6 +191,26 @@ export default function MetricsClient({ metrics }: { metrics: Metrics }) {
           </div>
         </Card>
 
+        <Card title="Top teams">
+          {topTeams.length === 0 ? (
+            <p className="text-sm text-slate-500">No team data yet.</p>
+          ) : (
+            <ul className="divide-y divide-slate-100">
+              {topTeams.map((t, idx) => (
+                <li key={t.key} className="py-2 flex items-center justify-between gap-3">
+                  <span className="text-sm text-slate-800 truncate">
+                    <span className="text-slate-400 mr-2">{idx + 1}.</span>
+                    {t.label}
+                  </span>
+                  <span className="text-sm font-semibold text-slate-700">{t.count}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
+      </section>
+
+      <section className="mb-6">
         <Card title="Top callers">
           {topCallers.length === 0 ? (
             <p className="text-sm text-slate-500">No caller data yet.</p>

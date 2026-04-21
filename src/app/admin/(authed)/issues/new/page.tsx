@@ -3,6 +3,7 @@
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { ONCALL_NAMES } from "@/lib/oncall";
+import { TEAMS } from "@/lib/teams";
 import {
   TOURNAMENTS,
   TOURNAMENT_LABEL,
@@ -16,6 +17,7 @@ export default function NewIssuePage() {
   const router = useRouter();
   const [reporter, setReporter] = useState("");
   const [caller, setCaller] = useState("");
+  const [team, setTeam] = useState("");
   const [description, setDescription] = useState("");
   const [tournament, setTournament] = useState<Tournament>("regular");
   const [ground, setGround] = useState<Ground>("phx");
@@ -30,7 +32,7 @@ export default function NewIssuePage() {
       const res = await fetch("/api/admin/issues", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ reporter, caller, description, tournament, ground }),
+        body: JSON.stringify({ reporter, caller, team, description, tournament, ground }),
       });
       const data = (await res.json()) as { issue?: { id: string }; error?: string };
       if (!res.ok || data.error) {
@@ -157,6 +159,28 @@ export default function NewIssuePage() {
               disabled={loading}
             />
           </div>
+        </div>
+
+        <div>
+          <label htmlFor="team" className="block text-sm font-medium text-slate-700 mb-1">
+            Team
+          </label>
+          <input
+            id="team"
+            type="text"
+            list="team-names"
+            value={team}
+            onChange={(e) => setTeam(e.target.value)}
+            placeholder="Start typing the team name…"
+            autoComplete="off"
+            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+            disabled={loading}
+          />
+          <datalist id="team-names">
+            {TEAMS.map((t) => (
+              <option key={t} value={t} />
+            ))}
+          </datalist>
         </div>
 
         <div>

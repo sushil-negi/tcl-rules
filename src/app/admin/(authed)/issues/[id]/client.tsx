@@ -117,6 +117,10 @@ export default function IssueDetailClient({ initialIssue }: { initialIssue: Issu
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
+                <dt className="text-slate-500">Team</dt>
+                <dd className="text-slate-900 mt-0.5">{issue.team || "—"}</dd>
+              </div>
+              <div>
                 <dt className="text-slate-500">Caller</dt>
                 <dd className="text-slate-900 mt-0.5">{issue.caller || "—"}</dd>
               </div>

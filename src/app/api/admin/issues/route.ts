@@ -40,10 +40,12 @@ export async function POST(request: Request) {
       description?: unknown;
       tournament?: unknown;
       ground?: unknown;
+      team?: unknown;
     };
     const reporter = typeof body.reporter === "string" ? body.reporter.trim() : "";
     const caller = typeof body.caller === "string" ? body.caller.trim() : "";
     const description = typeof body.description === "string" ? body.description.trim() : "";
+    const team = typeof body.team === "string" ? body.team.trim() : "";
     const tournamentRaw = typeof body.tournament === "string" ? body.tournament : "";
     const groundRaw = typeof body.ground === "string" ? body.ground : "";
     if (!description) {
@@ -70,6 +72,7 @@ export async function POST(request: Request) {
       isoWeek: week,
       tournament,
       ground,
+      team,
       reportedAt: now.toISOString(),
       reporter,
       caller,

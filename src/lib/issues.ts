@@ -26,6 +26,7 @@ export interface Issue {
   isoWeek: number;
   tournament: Tournament;
   ground: Ground;
+  team: string;
   reportedAt: string;
   reporter: string;
   caller: string;
@@ -45,6 +46,7 @@ export const ISSUE_HEADERS = [
   "iso_week",
   "tournament",
   "ground",
+  "team",
   "reported_at",
   "reporter",
   "caller",
@@ -122,6 +124,7 @@ export function issueToRow(issue: Issue): string[] {
     String(issue.isoWeek),
     issue.tournament,
     issue.ground,
+    issue.team,
     issue.reportedAt,
     issue.reporter,
     issue.caller,
@@ -146,6 +149,7 @@ export function rowToIssue(row: string[]): Issue | null {
     iso_week,
     tournament,
     ground,
+    team,
     reported_at,
     reporter,
     caller,
@@ -164,6 +168,7 @@ export function rowToIssue(row: string[]): Issue | null {
     isoWeek: Number(iso_week) || 0,
     tournament: normalizeTournament(tournament),
     ground: normalizeGround(ground),
+    team: team || "",
     reportedAt: reported_at || "",
     reporter: reporter || "",
     caller: caller || "",

@@ -2,7 +2,7 @@ import { google, sheets_v4 } from "googleapis";
 import { Issue, ISSUE_HEADERS, issueToRow, rowToIssue } from "./issues";
 
 const SHEET_NAME = "Issues";
-const LAST_COL = "P"; // matches ISSUE_HEADERS length (16 columns)
+const LAST_COL = "Q"; // matches ISSUE_HEADERS length (17 columns)
 const RANGE_ALL = `${SHEET_NAME}!A:${LAST_COL}`;
 const RANGE_HEADERS = `${SHEET_NAME}!A1:${LAST_COL}1`;
 const RANGE_ROWS = `${SHEET_NAME}!A2:${LAST_COL}`;
@@ -129,24 +129,25 @@ export async function getIssue(id: string): Promise<Issue | null> {
   return issues.find((i) => i.id === id) ?? null;
 }
 
-// Column letters mirror ISSUE_HEADERS order (A = id, … , P = updated_at).
+// Column letters mirror ISSUE_HEADERS order (A = id, … , Q = updated_at).
 const COL: Record<keyof Issue, string> = {
   id: "A",
   year: "B",
   isoWeek: "C",
   tournament: "D",
   ground: "E",
-  reportedAt: "F",
-  reporter: "G",
-  caller: "H",
-  description: "I",
-  aiStatus: "J",
-  aiRelatedSection: "K",
-  aiSuggestedWording: "L",
-  status: "M",
-  resolution: "N",
-  createdAt: "O",
-  updatedAt: "P",
+  team: "F",
+  reportedAt: "G",
+  reporter: "H",
+  caller: "I",
+  description: "J",
+  aiStatus: "K",
+  aiRelatedSection: "L",
+  aiSuggestedWording: "M",
+  status: "N",
+  resolution: "O",
+  createdAt: "P",
+  updatedAt: "Q",
 };
 
 export async function updateIssue(id: string, patch: Partial<Issue>): Promise<Issue | null> {

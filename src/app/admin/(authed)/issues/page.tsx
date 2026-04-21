@@ -85,6 +85,7 @@ export default async function IssuesPage() {
                         <p className="text-xs text-slate-500 mt-1">
                           {new Date(issue.reportedAt).toLocaleString()}
                           {` · ${GROUND_LABEL[issue.ground]}`}
+                          {issue.team ? ` · ${issue.team}` : ""}
                           {issue.caller ? ` · caller: ${issue.caller}` : ""}
                           {issue.reporter ? ` · logged by: ${issue.reporter}` : ""}
                         </p>

@@ -64,6 +64,7 @@ export interface Metrics {
   gapsPerWeek: WeekBucket[];
   byGround: CountRow[];
   byTournament: CountRow[];
+  topTeams: CountRow[];
   topCallers: CountRow[];
   topSections: CountRow[];
   aging: AgingItem[];
@@ -150,6 +151,19 @@ function topCallers(issues: Issue[], limit: number): CountRow[] {
     .slice(0, limit);
 }
 
+function topTeams(issues: Issue[], limit: number): CountRow[] {
+  const counts = new Map<string, number>();
+  for (const i of issues) {
+    const name = i.team?.trim();
+    if (!name) continue;
+    counts.set(name, (counts.get(name) ?? 0) + 1);
+  }
+  return Array.from(counts.entries())
+    .map(([label, count]) => ({ key: label, label, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, limit);
+}
+
 function normalizeSection(raw: string): string {
   const s = (raw || "").trim();
   if (!s || /^none$/i.test(s)) return "";
@@ -219,6 +233,7 @@ export function computeMetrics(issues: Issue[], now: Date = new Date()): Metrics
       TOURNAMENTS,
       (k) => TOURNAMENT_LABEL[k]
     ),
+    topTeams: topTeams(issues, 10),
     topCallers: topCallers(issues, 10),
     topSections: topSections(issues, 5),
     aging: agingOpen(issues, 7, now),
