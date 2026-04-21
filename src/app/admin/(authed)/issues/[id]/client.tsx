@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Issue, IssueStatus, AiStatus, TOURNAMENT_LABEL, GROUND_LABEL } from "@/lib/issues";
+import { fmtDateTime } from "@/lib/dates";
 
 const STATUS_OPTIONS: { value: IssueStatus; label: string }[] = [
   { value: "open", label: "Open" },
@@ -131,7 +132,7 @@ export default function IssueDetailClient({ initialIssue }: { initialIssue: Issu
             </div>
             <div>
               <dt className="text-slate-500">Reported at</dt>
-              <dd className="text-slate-900 mt-0.5">{new Date(issue.reportedAt).toLocaleString()}</dd>
+              <dd className="text-slate-900 mt-0.5">{fmtDateTime(issue.reportedAt)}</dd>
             </div>
           </dl>
         </section>

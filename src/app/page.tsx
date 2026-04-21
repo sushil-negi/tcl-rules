@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, FormEvent } from "react";
 import Image from "next/image";
+import { fmtDateTime } from "@/lib/dates";
 
 type AnswerSource = "tcl" | "icc" | "none";
 
@@ -267,7 +268,7 @@ export default function Home() {
               {meta && (
                 <p className="mt-3 pt-3 border-t border-slate-100 text-xs text-slate-500">
                   TCL doc: <span className="font-medium">{meta.docTitle}</span> · fetched{" "}
-                  {new Date(meta.docFetchedAt).toLocaleString()}
+                  {fmtDateTime(meta.docFetchedAt)}
                 </p>
               )}
             </div>
@@ -324,7 +325,7 @@ export default function Home() {
                               {entry.question}
                             </p>
                             <p className="text-xs text-slate-500 mt-0.5">
-                              {new Date(entry.askedAt).toLocaleString()}
+                              {fmtDateTime(entry.askedAt)}
                             </p>
                           </div>
                           <svg

@@ -7,6 +7,7 @@ import {
   GROUNDS,
   GROUND_LABEL,
 } from "./issues";
+import { safeDate } from "./dates";
 
 const MS_PER_DAY = 86_400_000;
 
@@ -71,15 +72,17 @@ export interface Metrics {
 }
 
 function avgResolutionDays(issues: Issue[]): number | null {
-  const resolved = issues.filter((i) => i.status === "resolved" && i.createdAt && i.updatedAt);
-  if (resolved.length === 0) return null;
-  const total = resolved.reduce((sum, i) => {
-    const created = new Date(i.createdAt).getTime();
-    const updated = new Date(i.updatedAt).getTime();
-    const diff = Math.max(0, updated - created);
-    return sum + diff;
-  }, 0);
-  return total / resolved.length / MS_PER_DAY;
+  let count = 0;
+  let total = 0;
+  for (const i of issues) {
+    if (i.status !== "resolved") continue;
+    const created = safeDate(i.createdAt);
+    const updated = safeDate(i.updatedAt);
+    if (!created || !updated) continue;
+    total += Math.max(0, updated.getTime() - created.getTime());
+    count += 1;
+  }
+  return count === 0 ? null : total / count / MS_PER_DAY;
 }
 
 function weekOverWeekPct(issues: Issue[], now: Date): number | null {
@@ -89,11 +92,13 @@ function weekOverWeekPct(issues: Issue[], now: Date): number | null {
   let thisWeek = 0;
   let lastWeek = 0;
   for (const i of issues) {
-    const t = new Date(i.reportedAt).getTime();
+    const reported = safeDate(i.reportedAt);
+    if (!reported) continue;
+    const t = reported.getTime();
     if (t >= lastWeekStart && t < nowMs) thisWeek += 1;
     else if (t >= prevWeekStart && t < lastWeekStart) lastWeek += 1;
   }
-  if (lastWeek === 0) return thisWeek === 0 ? 0 : null; // null = "new"
+  if (lastWeek === 0) return thisWeek === 0 ? 0 : null;
   return ((thisWeek - lastWeek) / lastWeek) * 100;
 }
 
@@ -111,10 +116,11 @@ function weeklyBuckets(
     buckets.set(key, { weekEndingISO: key, label: weekLabel(d), count: 0 });
   }
   const firstKey = Array.from(buckets.keys())[0];
-  const firstDate = new Date(firstKey).getTime();
+  const firstDate = safeDate(firstKey)?.getTime() ?? 0;
   for (const issue of issues) {
     if (!predicate(issue)) continue;
-    const reported = new Date(issue.reportedAt);
+    const reported = safeDate(issue.reportedAt);
+    if (!reported) continue;
     if (reported.getTime() < firstDate - 6 * MS_PER_DAY) continue;
     const key = weekKey(reported);
     const bucket = buckets.get(key);
@@ -189,7 +195,9 @@ function agingOpen(issues: Issue[], minDays: number, now: Date): AgingItem[] {
   const items: AgingItem[] = [];
   for (const i of issues) {
     if (i.status === "resolved") continue;
-    const createdMs = new Date(i.createdAt || i.reportedAt).getTime();
+    const created = safeDate(i.createdAt) ?? safeDate(i.reportedAt);
+    if (!created) continue;
+    const createdMs = created.getTime();
     if (createdMs > cutoffMs) continue;
     const ageDays = Math.floor((now.getTime() - createdMs) / MS_PER_DAY);
     items.push({

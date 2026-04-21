@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { listIssues } from "@/lib/sheets";
 import { groupByWeek, Issue, IssueStatus, AiStatus, GROUND_LABEL } from "@/lib/issues";
+import { fmtDateTime } from "@/lib/dates";
 
 export const dynamic = "force-dynamic";
 
@@ -83,7 +84,7 @@ export default async function IssuesPage() {
                           {issue.description}
                         </p>
                         <p className="text-xs text-slate-500 mt-1">
-                          {new Date(issue.reportedAt).toLocaleString()}
+                          {fmtDateTime(issue.reportedAt)}
                           {` · ${GROUND_LABEL[issue.ground]}`}
                           {issue.team ? ` · ${issue.team}` : ""}
                           {issue.caller ? ` · caller: ${issue.caller}` : ""}
