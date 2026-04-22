@@ -108,7 +108,12 @@ export default function MetricsClient({ metrics }: { metrics: Metrics }) {
       {/* KPIs */}
       <section className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
         <Kpi label="Open" value={String(kpis.open)} tone="orange" />
-        <Kpi label="Needs rule update" value={String(kpis.needsRule)} tone="amber" />
+        <Kpi
+          label="Rule gaps"
+          value={String(kpis.needsRule)}
+          tone="amber"
+          hint="AI-flagged gaps + admin-marked"
+        />
         <Kpi label="Resolved" value={String(kpis.resolved)} tone="green" />
         <Kpi
           label="Avg to resolve"

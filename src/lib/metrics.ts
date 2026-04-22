@@ -212,10 +212,19 @@ function agingOpen(issues: Issue[], minDays: number, now: Date): AgingItem[] {
   return items.sort((a, b) => b.ageDays - a.ageDays);
 }
 
+const isRuleGap = (i: Issue): boolean =>
+  i.aiStatus === "gap" || i.status === "needs_rule_update";
+
 export function computeMetrics(issues: Issue[], now: Date = new Date()): Metrics {
   const total = issues.length;
+  // An issue counts as "open" if its operational status isn't resolved
+  // (including "needs_rule_update"). This matches what someone scanning
+  // the list thinks of as "still open".
   const open = issues.filter((i) => i.status === "open").length;
-  const needsRule = issues.filter((i) => i.status === "needs_rule_update").length;
+  // A rule gap is either an AI-flagged gap OR an explicit "needs rule
+  // update" operational status. Matches the Gap badge on the list and
+  // the gapsPerWeek chart so counts never diverge.
+  const needsRule = issues.filter(isRuleGap).length;
   const resolved = issues.filter((i) => i.status === "resolved").length;
 
   return {
@@ -228,12 +237,7 @@ export function computeMetrics(issues: Issue[], now: Date = new Date()): Metrics
       weekOverWeekPct: weekOverWeekPct(issues, now),
     },
     newPerWeek: weeklyBuckets(issues, now, 8, () => true),
-    gapsPerWeek: weeklyBuckets(
-      issues,
-      now,
-      8,
-      (i) => i.aiStatus === "gap" || i.status === "needs_rule_update"
-    ),
+    gapsPerWeek: weeklyBuckets(issues, now, 8, isRuleGap),
     byGround: byCategory<Ground>(issues, (i) => i.ground, GROUNDS, (k) => GROUND_LABEL[k]),
     byTournament: byCategory<Tournament>(
       issues,
