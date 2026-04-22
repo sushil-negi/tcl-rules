@@ -24,7 +24,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               <div className="text-sm sm:text-base font-bold leading-tight truncate">
                 TCL Admin
               </div>
-              <div className="text-[10px] sm:text-xs text-orange-300 leading-tight">
+              <div className="text-[10px] sm:text-xs text-orange-200 leading-tight">
                 Support Issues Tracker
               </div>
             </div>

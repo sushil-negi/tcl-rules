@@ -45,7 +45,7 @@ export default function LoginForm() {
         autoFocus
         value={password}
         onChange={(e) => setPassword(e.target.value)}
-        className="w-full rounded-md border border-slate-300 px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+        className="w-full rounded-md border border-slate-300 px-3 py-2 text-base text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
         disabled={loading}
       />
       {error && (
@@ -56,7 +56,7 @@ export default function LoginForm() {
       <button
         type="submit"
         disabled={loading || !password}
-        className="mt-4 w-full inline-flex items-center justify-center rounded-md bg-orange-500 hover:bg-orange-600 text-white px-4 py-2.5 text-sm font-semibold disabled:opacity-50"
+        className="mt-4 w-full inline-flex items-center justify-center rounded-md bg-orange-500 hover:bg-orange-600 text-white px-4 py-2.5 text-sm font-semibold disabled:bg-slate-300 disabled:text-slate-700 disabled:cursor-not-allowed focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
       >
         {loading ? "Signing in…" : "Sign in"}
       </button>

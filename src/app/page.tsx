@@ -25,7 +25,7 @@ interface HistoryEntry {
 const SOURCE_BADGE: Record<AnswerSource, { label: string; className: string }> = {
   tcl: { label: "From TCL rules", className: "bg-green-100 text-green-800" },
   icc: { label: "From ICC ODI rules (TCL silent)", className: "bg-blue-100 text-blue-800" },
-  none: { label: "Not in TCL or ICC", className: "bg-slate-100 text-slate-700" },
+  none: { label: "Not in TCL or ICC", className: "bg-slate-200 text-slate-900" },
 };
 
 const STORAGE_KEY = "tcl-rules-history-v1";
@@ -152,7 +152,7 @@ export default function Home() {
             <h1 className="text-lg sm:text-2xl font-bold tracking-wide leading-tight">
               Tennis Cricket League
             </h1>
-            <p className="text-orange-300 text-xs sm:text-sm mt-0.5">Ask About the Rules</p>
+            <p className="text-orange-200 text-xs sm:text-sm mt-0.5">Ask About the Rules</p>
           </div>
         </div>
       </header>
@@ -180,7 +180,7 @@ export default function Home() {
             onChange={(e) => setQuestion(e.target.value)}
             placeholder="e.g. How many overs are played in a match?"
             rows={3}
-            className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-base text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-y"
+            className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-base text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-y"
             disabled={loading}
           />
 
@@ -188,7 +188,7 @@ export default function Home() {
             <button
               type="submit"
               disabled={loading || !question.trim()}
-              className="inline-flex items-center justify-center rounded-md bg-orange-500 hover:bg-orange-600 text-white px-5 py-2.5 text-sm font-semibold shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors w-full sm:w-auto"
+              className="inline-flex items-center justify-center rounded-md bg-orange-500 hover:bg-orange-600 text-white px-5 py-2.5 text-sm font-semibold shadow-sm disabled:bg-slate-300 disabled:text-slate-600 disabled:cursor-not-allowed transition-colors w-full sm:w-auto focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
             >
               {loading ? (
                 <>
@@ -212,7 +212,7 @@ export default function Home() {
               type="button"
               onClick={(e) => handleSubmit(e as unknown as FormEvent<HTMLFormElement>, true)}
               disabled={loading || !question.trim()}
-              className="text-xs text-slate-600 hover:text-slate-900 underline underline-offset-2 disabled:opacity-40 disabled:no-underline self-start sm:self-auto"
+              className="text-xs text-slate-700 hover:text-slate-900 underline underline-offset-2 disabled:text-slate-400 disabled:no-underline self-start sm:self-auto focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-500 rounded"
               title="Re-fetch the latest rules doc from Drive before answering (normally cached for 1 week)"
             >
               Refresh rules &amp; ask
@@ -221,14 +221,14 @@ export default function Home() {
 
           {!answer && !loading && (
             <div className="mt-4 pt-4 border-t border-slate-100">
-              <p className="text-xs text-slate-500 mb-2">Try:</p>
+              <p className="text-xs text-slate-600 mb-2">Try:</p>
               <div className="flex flex-wrap gap-2">
                 {examples.map((ex) => (
                   <button
                     key={ex}
                     type="button"
                     onClick={() => setQuestion(ex)}
-                    className="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded-full transition-colors"
+                    className="text-xs bg-slate-100 hover:bg-slate-200 text-slate-800 px-2.5 py-1 rounded-full transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-500"
                   >
                     {ex}
                   </button>
@@ -250,7 +250,7 @@ export default function Home() {
         {answer && (
           <section className="mt-6 sm:mt-8">
             <div className="flex items-center justify-between mb-2 gap-2">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-600">
                 Answer
               </h3>
               {source && (
@@ -266,7 +266,7 @@ export default function Home() {
                 {answer}
               </div>
               {meta && (
-                <p className="mt-3 pt-3 border-t border-slate-100 text-xs text-slate-500">
+                <p className="mt-3 pt-3 border-t border-slate-100 text-xs text-slate-600">
                   TCL doc: <span className="font-medium">{meta.docTitle}</span> · fetched{" "}
                   {fmtDateTime(meta.docFetchedAt)}
                 </p>
@@ -300,7 +300,7 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={clearHistory}
-                  className="text-xs text-slate-500 hover:text-red-600 underline underline-offset-2"
+                  className="text-xs text-slate-600 hover:text-red-600 underline underline-offset-2"
                 >
                   Clear all
                 </button>
@@ -324,13 +324,13 @@ export default function Home() {
                             <p className="text-sm font-medium text-slate-900 line-clamp-2">
                               {entry.question}
                             </p>
-                            <p className="text-xs text-slate-500 mt-0.5">
+                            <p className="text-xs text-slate-600 mt-0.5">
                               {fmtDateTime(entry.askedAt)}
                             </p>
                           </div>
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
-                            className={`h-4 w-4 text-slate-400 shrink-0 mt-1 transition-transform ${isOpen ? "rotate-180" : ""}`}
+                            className={`h-4 w-4 text-slate-500 shrink-0 mt-1 transition-transform ${isOpen ? "rotate-180" : ""}`}
                             fill="none"
                             viewBox="0 0 24 24"
                             stroke="currentColor"
@@ -392,7 +392,7 @@ export default function Home() {
         </div>
       </section>
 
-      <footer className="py-4 px-4 text-center text-xs text-slate-500 border-t border-slate-200 bg-white/60">
+      <footer className="py-4 px-4 text-center text-xs text-slate-600 border-t border-slate-200 bg-white/60">
         Tennis Cricket League · Rules queries powered by the official rules document
       </footer>
     </div>

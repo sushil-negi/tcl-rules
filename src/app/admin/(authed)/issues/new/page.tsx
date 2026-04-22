@@ -136,7 +136,7 @@ export default function NewIssuePage() {
               onChange={(e) => setReporter(e.target.value)}
               placeholder="Start typing your name…"
               autoComplete="off"
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
               disabled={loading}
             />
             <datalist id="oncall-names">
@@ -155,7 +155,7 @@ export default function NewIssuePage() {
               value={caller}
               onChange={(e) => setCaller(e.target.value)}
               placeholder="Person who reported"
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
               disabled={loading}
             />
           </div>
@@ -173,7 +173,7 @@ export default function NewIssuePage() {
             onChange={(e) => setTeam(e.target.value)}
             placeholder="Start typing the team name…"
             autoComplete="off"
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
             disabled={loading}
           />
           <datalist id="team-names">
@@ -209,7 +209,7 @@ export default function NewIssuePage() {
           <button
             type="submit"
             disabled={loading || !description.trim()}
-            className="inline-flex items-center justify-center rounded-md bg-orange-500 hover:bg-orange-600 text-white px-5 py-2.5 text-sm font-semibold disabled:opacity-50"
+            className="inline-flex items-center justify-center rounded-md bg-orange-500 hover:bg-orange-600 text-white px-5 py-2.5 text-sm font-semibold disabled:bg-slate-300 disabled:text-slate-700 disabled:cursor-not-allowed focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
           >
             {loading ? "Analyzing & saving…" : "Save issue"}
           </button>
@@ -217,7 +217,7 @@ export default function NewIssuePage() {
             type="button"
             onClick={() => router.push("/admin/issues")}
             disabled={loading}
-            className="inline-flex items-center justify-center rounded-md bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 px-5 py-2.5 text-sm font-semibold disabled:opacity-50"
+            className="inline-flex items-center justify-center rounded-md bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 px-5 py-2.5 text-sm font-semibold disabled:bg-slate-300 disabled:text-slate-700 disabled:cursor-not-allowed focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
           >
             Cancel
           </button>

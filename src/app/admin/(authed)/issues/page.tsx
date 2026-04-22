@@ -15,12 +15,12 @@ const AI_BADGE: Record<AiStatus, { text: string; className: string }> = {
   analyzing: { text: "Analyzing…", className: "bg-blue-100 text-blue-800 animate-pulse" },
   covered: { text: "Covered", className: "bg-green-100 text-green-800" },
   gap: { text: "Gap", className: "bg-amber-100 text-amber-800" },
-  unclear: { text: "Unclear", className: "bg-slate-100 text-slate-700" },
+  unclear: { text: "Unclear", className: "bg-slate-200 text-slate-900" },
 };
 
 const STATUS_BADGE: Record<IssueStatus, string> = {
   open: "bg-sky-100 text-sky-800",
-  resolved: "bg-slate-100 text-slate-700",
+  resolved: "bg-slate-200 text-slate-900",
   needs_rule_update: "bg-orange-100 text-orange-800",
 };
 
@@ -39,7 +39,7 @@ export default async function IssuesPage() {
     <div>
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-xl sm:text-2xl font-semibold text-slate-900">Support Issues</h1>
-        <span className="text-sm text-slate-500">
+        <span className="text-sm text-slate-600">
           {issues.length} total
         </span>
       </div>
@@ -65,9 +65,9 @@ export default async function IssuesPage() {
       <div className="space-y-6">
         {groups.map((group) => (
           <section key={`${group.year}-${group.week}`}>
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500 mb-2">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-600 mb-2">
               {group.label}{" "}
-              <span className="text-slate-400 font-normal">
+              <span className="text-slate-600 font-normal">
                 · {group.issues.length} issue{group.issues.length === 1 ? "" : "s"}
               </span>
             </h2>
@@ -83,7 +83,7 @@ export default async function IssuesPage() {
                         <p className="text-sm text-slate-900 line-clamp-2">
                           {issue.description}
                         </p>
-                        <p className="text-xs text-slate-500 mt-1">
+                        <p className="text-xs text-slate-600 mt-1">
                           {fmtDateTime(issue.reportedAt)}
                           {` · ${GROUND_LABEL[issue.ground]}`}
                           {issue.team ? ` · ${issue.team}` : ""}

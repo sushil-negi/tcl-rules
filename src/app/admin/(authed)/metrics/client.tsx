@@ -38,15 +38,15 @@ function Kpi({
   const toneClass = {
     slate: "text-slate-900",
     orange: "text-orange-600",
-    amber: "text-amber-600",
+    amber: "text-amber-700",
     green: "text-green-700",
     red: "text-red-700",
   }[tone];
   return (
     <div className="bg-white border border-slate-200 rounded-lg p-4">
-      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</p>
+      <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">{label}</p>
       <p className={`mt-1 text-2xl font-bold ${toneClass}`}>{value}</p>
-      {hint && <p className="text-xs text-slate-500 mt-0.5">{hint}</p>}
+      {hint && <p className="text-xs text-slate-600 mt-0.5">{hint}</p>}
     </div>
   );
 }
@@ -62,7 +62,7 @@ function Card({
 }) {
   return (
     <div className={`bg-white border border-slate-200 rounded-lg p-4 ${className}`}>
-      <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-3">
+      <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-600 mb-3">
         {title}
       </h3>
       {children}
@@ -193,13 +193,13 @@ export default function MetricsClient({ metrics }: { metrics: Metrics }) {
 
         <Card title="Top teams">
           {topTeams.length === 0 ? (
-            <p className="text-sm text-slate-500">No team data yet.</p>
+            <p className="text-sm text-slate-600">No team data yet.</p>
           ) : (
             <ul className="divide-y divide-slate-100">
               {topTeams.map((t, idx) => (
                 <li key={t.key} className="py-2 flex items-center justify-between gap-3">
                   <span className="text-sm text-slate-800 truncate">
-                    <span className="text-slate-400 mr-2">{idx + 1}.</span>
+                    <span className="text-slate-500 mr-2">{idx + 1}.</span>
                     {t.label}
                   </span>
                   <span className="text-sm font-semibold text-slate-700">{t.count}</span>
@@ -213,13 +213,13 @@ export default function MetricsClient({ metrics }: { metrics: Metrics }) {
       <section className="mb-6">
         <Card title="Top callers">
           {topCallers.length === 0 ? (
-            <p className="text-sm text-slate-500">No caller data yet.</p>
+            <p className="text-sm text-slate-600">No caller data yet.</p>
           ) : (
             <ul className="divide-y divide-slate-100">
               {topCallers.map((c, idx) => (
                 <li key={c.key} className="py-2 flex items-center justify-between gap-3">
                   <span className="text-sm text-slate-800 truncate">
-                    <span className="text-slate-400 mr-2">{idx + 1}.</span>
+                    <span className="text-slate-500 mr-2">{idx + 1}.</span>
                     {c.label}
                   </span>
                   <span className="text-sm font-semibold text-slate-700">{c.count}</span>
@@ -233,7 +233,7 @@ export default function MetricsClient({ metrics }: { metrics: Metrics }) {
       {/* Aging issues */}
       <Card title={`Aging open issues (> 7 days) — ${aging.length}`} className="mb-6">
         {aging.length === 0 ? (
-          <p className="text-sm text-slate-500">Nothing older than 7 days. Nice.</p>
+          <p className="text-sm text-slate-600">Nothing older than 7 days. Nice.</p>
         ) : (
           <ul className="divide-y divide-slate-200">
             {aging.map((item) => (
@@ -245,7 +245,7 @@ export default function MetricsClient({ metrics }: { metrics: Metrics }) {
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
                       <p className="text-sm text-slate-900 line-clamp-2">{item.description}</p>
-                      <p className="text-xs text-slate-500 mt-0.5">
+                      <p className="text-xs text-slate-600 mt-0.5">
                         {STATUS_LABEL[item.status]}
                       </p>
                     </div>
@@ -263,7 +263,7 @@ export default function MetricsClient({ metrics }: { metrics: Metrics }) {
       {/* Top rule sections */}
       <Card title="Most-referenced rule sections">
         {topSections.length === 0 ? (
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-slate-600">
             No rule citations yet. Sections will appear as issues are logged and analyzed.
           </p>
         ) : (
@@ -275,7 +275,7 @@ export default function MetricsClient({ metrics }: { metrics: Metrics }) {
                 <li key={s.key}>
                   <div className="flex items-start justify-between gap-3 mb-1">
                     <span className="text-sm text-slate-800" title={s.label}>
-                      <span className="text-slate-400 mr-2">{idx + 1}.</span>
+                      <span className="text-slate-500 mr-2">{idx + 1}.</span>
                       {s.label}
                     </span>
                     <span className="text-sm font-semibold text-slate-700 shrink-0">

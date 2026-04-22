@@ -28,7 +28,7 @@ const AI_BADGE: Record<AiStatus, { text: string; className: string; description:
   },
   unclear: {
     text: "Unclear / partial",
-    className: "bg-slate-100 text-slate-700",
+    className: "bg-slate-200 text-slate-900",
     description: "The rules partially address this or are ambiguous.",
   },
 };
@@ -102,43 +102,43 @@ export default function IssueDetailClient({ initialIssue }: { initialIssue: Issu
   return (
     <div className="mt-3">
       <h1 className="text-xl sm:text-2xl font-semibold text-slate-900 mb-1">Issue details</h1>
-      <p className="text-xs text-slate-500 mb-5 break-all">
+      <p className="text-xs text-slate-600 mb-5 break-all">
         {TOURNAMENT_LABEL[issue.tournament]} · Week {issue.isoWeek} · Ground: {GROUND_LABEL[issue.ground]} · ID: {issue.id}
       </p>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         <section className="bg-white border border-slate-200 rounded-lg p-5">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-3">
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-600 mb-3">
             Report
           </h2>
           <dl className="space-y-3 text-sm">
             <div>
-              <dt className="text-slate-500">Description</dt>
+              <dt className="text-slate-600">Description</dt>
               <dd className="text-slate-900 whitespace-pre-wrap mt-0.5">{issue.description}</dd>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <dt className="text-slate-500">Team</dt>
+                <dt className="text-slate-600">Team</dt>
                 <dd className="text-slate-900 mt-0.5">{issue.team || "—"}</dd>
               </div>
               <div>
-                <dt className="text-slate-500">Caller</dt>
+                <dt className="text-slate-600">Caller</dt>
                 <dd className="text-slate-900 mt-0.5">{issue.caller || "—"}</dd>
               </div>
               <div>
-                <dt className="text-slate-500">Logged by</dt>
+                <dt className="text-slate-600">Logged by</dt>
                 <dd className="text-slate-900 mt-0.5">{issue.reporter || "—"}</dd>
               </div>
             </div>
             <div>
-              <dt className="text-slate-500">Reported at</dt>
+              <dt className="text-slate-600">Reported at</dt>
               <dd className="text-slate-900 mt-0.5">{fmtDateTime(issue.reportedAt)}</dd>
             </div>
           </dl>
         </section>
 
         <section className="bg-white border border-slate-200 rounded-lg p-5">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-3">
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-600 mb-3">
             Rules analysis
           </h2>
           <div className="mb-3">
@@ -147,11 +147,11 @@ export default function IssueDetailClient({ initialIssue }: { initialIssue: Issu
             >
               {AI_BADGE[issue.aiStatus].text}
             </span>
-            <p className="text-xs text-slate-500 mt-2">{AI_BADGE[issue.aiStatus].description}</p>
+            <p className="text-xs text-slate-600 mt-2">{AI_BADGE[issue.aiStatus].description}</p>
           </div>
           {issue.aiRelatedSection && (
             <div className="mb-3">
-              <p className="text-xs text-slate-500">Related section</p>
+              <p className="text-xs text-slate-600">Related section</p>
               <p className="text-sm text-slate-900 whitespace-pre-wrap mt-0.5">
                 {issue.aiRelatedSection}
               </p>
@@ -159,7 +159,7 @@ export default function IssueDetailClient({ initialIssue }: { initialIssue: Issu
           )}
           {issue.aiSuggestedWording && (
             <div>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-slate-600">
                 {issue.aiStatus === "gap" ? "Suggested new rule" : "Suggested clarification"}
               </p>
               <p className="text-sm text-slate-900 whitespace-pre-wrap mt-0.5 bg-amber-50 border border-amber-200 rounded p-2">
@@ -170,7 +170,7 @@ export default function IssueDetailClient({ initialIssue }: { initialIssue: Issu
         </section>
 
         <section className="bg-white border border-slate-200 rounded-lg p-5 lg:col-span-2">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-3">
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-600 mb-3">
             Status &amp; resolution
           </h2>
           <div className="space-y-3">
@@ -205,7 +205,7 @@ export default function IssueDetailClient({ initialIssue }: { initialIssue: Issu
                 className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-y"
                 disabled={saving}
               />
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-slate-600">
                 Saved to the existing row in the issues sheet (column &quot;resolution&quot;).
               </p>
             </div>
@@ -219,7 +219,7 @@ export default function IssueDetailClient({ initialIssue }: { initialIssue: Issu
                 type="button"
                 onClick={() => save()}
                 disabled={saving}
-                className="inline-flex items-center justify-center rounded-md bg-slate-900 hover:bg-slate-800 text-white px-5 py-2 text-sm font-semibold disabled:opacity-50"
+                className="inline-flex items-center justify-center rounded-md bg-slate-900 hover:bg-slate-800 text-white px-5 py-2 text-sm font-semibold disabled:bg-slate-300 disabled:text-slate-700 disabled:cursor-not-allowed focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
               >
                 {saving ? "Saving…" : "Save changes"}
               </button>
@@ -228,7 +228,7 @@ export default function IssueDetailClient({ initialIssue }: { initialIssue: Issu
                   type="button"
                   onClick={() => save("resolved")}
                   disabled={saving}
-                  className="inline-flex items-center justify-center rounded-md bg-orange-500 hover:bg-orange-600 text-white px-5 py-2 text-sm font-semibold disabled:opacity-50"
+                  className="inline-flex items-center justify-center rounded-md bg-orange-500 hover:bg-orange-600 text-white px-5 py-2 text-sm font-semibold disabled:bg-slate-300 disabled:text-slate-700 disabled:cursor-not-allowed focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
                 >
                   Save as resolved
                 </button>
