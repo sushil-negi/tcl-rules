@@ -182,7 +182,7 @@ export default function IssueDetailClient({ initialIssue }: { initialIssue: Issu
                 id="status"
                 value={status}
                 onChange={(e) => setStatus(e.target.value as IssueStatus)}
-                className="rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="rounded-md border border-slate-300 bg-white text-slate-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
                 disabled={saving}
               >
                 {STATUS_OPTIONS.map((opt) => (
@@ -202,7 +202,7 @@ export default function IssueDetailClient({ initialIssue }: { initialIssue: Issu
                 onChange={(e) => setResolution(e.target.value)}
                 rows={4}
                 placeholder="How was this handled? Any follow-up needed?"
-                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-y"
+                className="w-full rounded-md border border-slate-300 bg-white text-slate-900 placeholder-slate-500 px-3 py-2 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-y"
                 disabled={saving}
               />
               <p className="mt-1 text-xs text-slate-600">
