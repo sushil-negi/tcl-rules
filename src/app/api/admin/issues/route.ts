@@ -93,10 +93,13 @@ export async function POST(request: Request) {
     // aiStatus transitions out of "analyzing".
     after(async () => {
       try {
-        const doc = await getRulesDoc();
+        const isSeniors = tournament === "seniors";
+        const regular = await getRulesDoc("regular");
+        const seniors = isSeniors ? await getRulesDoc("seniors") : undefined;
         const analysis = await analyzeIssueAgainstRules({
-          docTitle: doc.title,
-          docText: doc.text,
+          regular: { title: regular.title, text: regular.text },
+          seniors: seniors ? { title: seniors.title, text: seniors.text } : undefined,
+          league: isSeniors ? "seniors" : "regular",
           issueDescription: description,
         });
         await updateIssue(issue.id, {

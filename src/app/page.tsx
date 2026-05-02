@@ -4,11 +4,13 @@ import { useState, useEffect, useCallback, FormEvent } from "react";
 import Image from "next/image";
 import { fmtDateTime } from "@/lib/dates";
 
-type AnswerSource = "tcl" | "icc" | "none";
+type AnswerSource = "seniors" | "regular" | "icc" | "none";
+type League = "regular" | "seniors";
 
 interface QueryResponse {
   answer: string;
   source: AnswerSource;
+  league: League;
   docTitle: string;
   docFetchedAt: string;
 }
@@ -18,15 +20,19 @@ interface HistoryEntry {
   question: string;
   answer: string;
   source: AnswerSource;
+  league?: League;
   docTitle: string;
   askedAt: string;
 }
 
 const SOURCE_BADGE: Record<AnswerSource, { label: string; className: string }> = {
-  tcl: { label: "From TCL rules", className: "bg-green-100 text-green-800" },
-  icc: { label: "From ICC ODI rules (TCL silent)", className: "bg-blue-100 text-blue-800" },
-  none: { label: "Not in TCL or ICC", className: "bg-slate-200 text-slate-900" },
+  seniors: { label: "From Seniors rules", className: "bg-purple-100 text-purple-800" },
+  regular: { label: "From Regular rules", className: "bg-green-100 text-green-800" },
+  icc: { label: "From ICC ODI rules", className: "bg-blue-100 text-blue-800" },
+  none: { label: "Not in any rules", className: "bg-slate-200 text-slate-900" },
 };
+
+const LEAGUE_STORAGE_KEY = "tcl-rules-league-v1";
 
 const STORAGE_KEY = "tcl-rules-history-v1";
 const MAX_HISTORY = 50;
@@ -62,10 +68,21 @@ export default function Home() {
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [league, setLeague] = useState<League>("regular");
 
   useEffect(() => {
     setHistory(loadHistory());
+    if (typeof window !== "undefined") {
+      const stored = window.localStorage.getItem(LEAGUE_STORAGE_KEY);
+      if (stored === "seniors" || stored === "regular") setLeague(stored);
+    }
   }, []);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(LEAGUE_STORAGE_KEY, league);
+    }
+  }, [league]);
 
   const pushHistory = useCallback((entry: HistoryEntry) => {
     setHistory((prev) => {
@@ -88,7 +105,7 @@ export default function Home() {
       const res = await fetch("/api/query", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: trimmed, refresh }),
+        body: JSON.stringify({ question: trimmed, refresh, league }),
       });
       const data = (await res.json()) as QueryResponse | { error: string };
       if (!res.ok || "error" in data) {
@@ -103,6 +120,7 @@ export default function Home() {
         question: trimmed,
         answer: data.answer,
         source: data.source,
+        league: data.league,
         docTitle: data.docTitle,
         askedAt: new Date().toISOString(),
       });
@@ -165,6 +183,40 @@ export default function Home() {
           <p className="mt-1.5 text-sm text-slate-600">
             Answers come only from the official TCL rules document and are generated live.
           </p>
+
+          <div className="mt-4">
+            <span className="block text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1.5">
+              League
+            </span>
+            <div
+              role="radiogroup"
+              aria-label="League"
+              className="inline-flex rounded-md border border-slate-300 bg-white p-1 shadow-sm"
+            >
+              {(["regular", "seniors"] as const).map((l) => (
+                <button
+                  key={l}
+                  type="button"
+                  role="radio"
+                  aria-checked={league === l}
+                  onClick={() => setLeague(l)}
+                  disabled={loading}
+                  className={`px-3 py-1.5 text-sm font-medium rounded transition-colors ${
+                    league === l
+                      ? "bg-orange-500 text-white shadow-sm"
+                      : "text-slate-700 hover:bg-slate-100 disabled:opacity-50"
+                  }`}
+                >
+                  {l === "regular" ? "Regular" : "Seniors"}
+                </button>
+              ))}
+            </div>
+            {league === "seniors" && (
+              <p className="mt-2 text-xs text-slate-500">
+                Seniors answers fall back to Regular rules, then ICC ODI, when the Seniors book is silent.
+              </p>
+            )}
+          </div>
         </section>
 
         <form

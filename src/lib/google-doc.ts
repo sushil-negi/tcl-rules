@@ -57,8 +57,10 @@ async function fetchDocText(fileId: string): Promise<{ text: string; title: stri
   );
 }
 
+export type League = "regular" | "seniors";
+
 type CacheEntry = { text: string; title: string; fetchedAt: number };
-let cache: CacheEntry | null = null;
+const cache: Partial<Record<League, CacheEntry>> = {};
 
 function ttlMs(): number {
   const defaultSeconds = 7 * 24 * 60 * 60; // 1 week
@@ -66,17 +68,33 @@ function ttlMs(): number {
   return (Number.isFinite(s) && s > 0 ? s : defaultSeconds) * 1000;
 }
 
-export async function getRulesDoc(): Promise<CacheEntry> {
-  const docId = process.env.GOOGLE_RULES_DOC_ID;
-  if (!docId) throw new Error("GOOGLE_RULES_DOC_ID is not set");
-
-  if (cache && Date.now() - cache.fetchedAt < ttlMs()) return cache;
-
-  const { text, title } = await fetchDocText(docId);
-  cache = { text, title, fetchedAt: Date.now() };
-  return cache;
+function docIdFor(league: League): string {
+  if (league === "seniors") {
+    const id = process.env.GOOGLE_RULES_DOC_ID_SENIORS;
+    if (!id) throw new Error("GOOGLE_RULES_DOC_ID_SENIORS is not set");
+    return id;
+  }
+  const id = process.env.GOOGLE_RULES_DOC_ID;
+  if (!id) throw new Error("GOOGLE_RULES_DOC_ID is not set");
+  return id;
 }
 
-export function invalidateRulesCache(): void {
-  cache = null;
+export async function getRulesDoc(league: League = "regular"): Promise<CacheEntry> {
+  const docId = docIdFor(league);
+  const existing = cache[league];
+  if (existing && Date.now() - existing.fetchedAt < ttlMs()) return existing;
+
+  const { text, title } = await fetchDocText(docId);
+  const entry: CacheEntry = { text, title, fetchedAt: Date.now() };
+  cache[league] = entry;
+  return entry;
+}
+
+export function invalidateRulesCache(league?: League): void {
+  if (league) {
+    delete cache[league];
+  } else {
+    delete cache.regular;
+    delete cache.seniors;
+  }
 }
